@@ -9,7 +9,7 @@ const App = () => {
   const [congress, setCongress] = useState(null)
   const [session, setSession] = useState(null)
   const [totVotes, setTotVotes] = useState(null)
-
+  const [voteArray, setVoteArray] = useState([])
 
   const congress_dates = [
     {year: "1989", congress: "101", session: "1"},
@@ -58,16 +58,22 @@ const App = () => {
     setYear(e.target.options[e.target.selectedIndex].dataset.year)
     setCongress(e.target.options[e.target.selectedIndex].dataset.congress)
     setSession(e.target.options[e.target.selectedIndex].dataset.session)
+    setTitle(null)
+    setDescription(null)
   }
 
   useEffect(() => {
+
     if (rollCall) {
       const getVote = async () => {
         // const response = await propublica.get(`/114/senate/sessions/1/votes/${rollCall}.json`)
         const response = await propublica.get(`/${congress}/senate/sessions/${session}/votes/${rollCall}.json`)
-        setTitle(response.data.results.votes.vote.bill.title)
-        setDescription(response.data.results.votes.vote.description)
-        console.log(response)
+        if (response.data.results) {
+          setTitle(response.data.results.votes.vote.bill.title)
+          setDescription(response.data.results.votes.vote.description)
+          console.log(response)
+        }
+        
       }      
 
       getVote()
@@ -77,34 +83,41 @@ const App = () => {
     if(year) {
       const getVoteNum = async () => {
         const yr_plus_one = (Number(year)+1).toString()
-        // console.log(yr_plus_one)
-        const response = await propublica.get(`senate/votes/${year}-12-05/${yr_plus_one}-01-04.json`)
-        console.log(response.data.results.votes[0].roll_call)
-        console.log("getVoteNum")
-        setTotVotes(response.data.results.votes[0].roll_call)
+        const response_dec = await propublica.get(`senate/votes/${year}-12-05/${yr_plus_one}-01-04.json`)
+        const response_nov = await propublica.get(`senate/votes/${year}-11-05/${year}-12-04.json`)
+        if (response_dec.data.results.votes[0]) {
+          setTotVotes(response_dec.data.results.votes[0].roll_call)
+        } else if (response_nov.data.results.votes[0]){
+          setTotVotes(response_nov.data.results.votes[0].roll_call)
+        } else {
+          document.getElementById("yearSelect").innerText = "Choose Vote"
+        }
+        
       }
 
-      getVoteNum()
+    const buildVoteArray = () => {
+      let votes = []
+      for (let i = 1; i<= totVotes; i++) {
+        votes.push(i)
+      }
+      setVoteArray(votes)
     }
 
-  },[rollCall, year, totVotes])
+      getVoteNum()
+      buildVoteArray()
+    }
+
+  },[rollCall, year, totVotes]) //original: [rollCall, year, totVotes]
 
   const voteNum = (e) => {
     setRollCall(e.target.value)
   }
 
-  const voteList = () => {
-    if(totVotes) {
-      console.log(totVotes)
-      console.log("voteList")
-    }
-    
-    // for (let i = 1; i <= totVotes; i++) {
-    //   return (
-    //     <option value={i}>i</option>
-    //   )
-    // }
-  }
+  const buildVotes = voteArray.map((item) => {
+    return (
+      <option value={item.toString()}>{item}</option>
+    )    
+  })
 
   return (
     <div>
@@ -112,12 +125,9 @@ const App = () => {
       <option value="">Select a Year and Congress</option>
       {congressList}
     </select>
-    <select className="ui search dropdown" onChange={voteNum}>
+    <select id="yearSelect" className="ui search dropdown" onChange={voteNum}>
       <option value="">Choose Vote</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      {voteList()}
+      {buildVotes}
     </select>
       <button onClick={() => useEffect}>Search</button>
       <h5>{title}</h5>
