@@ -10,6 +10,7 @@ const App = () => {
   const [session, setSession] = useState(null)
   const [totVotes, setTotVotes] = useState(null)
   const [voteArray, setVoteArray] = useState([])
+  const [positionArray, setPositionArray] = useState([])
 
   const congress_dates = [
     {year: "1989", congress: "101", session: "1"},
@@ -71,6 +72,7 @@ const App = () => {
         if (response.data.results) {
           setTitle(response.data.results.votes.vote.bill.title)
           setDescription(response.data.results.votes.vote.description)
+          setPositionArray(response.data.results.votes.vote.positions)
           console.log(response)
         }
         
@@ -82,17 +84,43 @@ const App = () => {
 
     if(year) {
       const getVoteNum = async () => {
+
+        const getVoteNumNov = async () => {
+          const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
+
+          if (response_nov.data.results.votes[0]) {
+            setTotVotes(response_nov.data.results.votes[0].roll_call)
+          } else if (response_nov.data.results.votes[0] === undefined) {
+            getVoteNumOct()
+          }
+        }
+
+        const getVoteNumOct = async () => {
+          const response_oct = await propublica.get(`senate/votes/${year}-10-02/${year}-11-01.json`)
+          if (response_oct.data.results.votes[0]) {
+            setTotVotes(response_oct.data.results.votes[0].roll_call)
+          } else {
+            document.getElementById("yearSelect").innerText = "Choose Vote"
+          }
+        }
+
         const yr_plus_one = (Number(year)+1).toString()
-        const response_dec = await propublica.get(`senate/votes/${year}-12-05/${yr_plus_one}-01-04.json`)
-        const response_nov = await propublica.get(`senate/votes/${year}-11-05/${year}-12-04.json`)
+        const response_dec = await propublica.get(`senate/votes/${year}-12-02/${yr_plus_one}-01-01.json`)
+
         if (response_dec.data.results.votes[0]) {
           setTotVotes(response_dec.data.results.votes[0].roll_call)
-        } else if (response_nov.data.results.votes[0]){
-          setTotVotes(response_nov.data.results.votes[0].roll_call)
-        } else {
-          document.getElementById("yearSelect").innerText = "Choose Vote"
-        }
-        
+        } else if (response_dec.data.results.votes[0] === undefined){
+          getVoteNumNov()
+        }         
+          
+        //   const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
+        //   setTotVotes(response_nov.data.results.votes[0].roll_call)
+        // } else if (response_nov.data.results.votes[0] == undefined){
+        //   const response_oct = await propublica.get(`senate/votes/${year}-10-02/${year}-11-01.json`)
+        //   setTotVotes(response_oct.data.results.votes[0].roll_call)
+        // } else {
+        //   document.getElementById("yearSelect").innerText = "Choose Vote"
+        // }  
       }
 
     const buildVoteArray = () => {
@@ -119,6 +147,12 @@ const App = () => {
     )    
   })
 
+  const buildSenators = positionArray.map((item) => {
+    return (
+      <option key={item.member_id} value={item.name}>{item.name}</option>
+    )
+  })
+
   return (
     <div>
     <select className="ui search dropdown" onChange={congressState}>
@@ -128,6 +162,10 @@ const App = () => {
     <select id="yearSelect" className="ui search dropdown" onChange={voteNum}>
       <option value="">Choose Vote</option>
       {buildVotes}
+    </select>
+    <select id="senatorSelect" className="ui search dropdown">
+      <option value="">Choose Senator</option>
+      {buildSenators}
     </select>
       <button onClick={() => useEffect}>Search</button>
       <h5>{title}</h5>
