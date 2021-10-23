@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, useCallback, useRef, useReducer} from "react"
 import propublica from "../api/propublica"
+import congress_dates from "./CongressDates"
 
 const App = () => {
   const [title, setTitle] = useState("")
@@ -11,41 +12,13 @@ const App = () => {
   const [totVotes, setTotVotes] = useState(null)
   const [voteArray, setVoteArray] = useState([])
   const [positionArray, setPositionArray] = useState([])
+  const [senatorOne, setSenatorOne] = useState("")
+  const [senatorTwo, setSenatorTwo] = useState("")
+  const [senatorOneVote, setSenatorOneVote] = useState("")
+  const [senatorTwoVote, setSenatorTwoVote] = useState("")
 
-  const congress_dates = [
-    {year: "1989", congress: "101", session: "1"},
-    {year: "1990", congress: "101", session: "2"},
-    {year: "1991", congress: "102", session: "1"},
-    {year: "1992", congress: "102", session: "2"},
-    {year: "1993", congress: "103", session: "1"},
-    {year: "1994", congress: "103", session: "2"},
-    {year: "1995", congress: "104", session: "1"},
-    {year: "1996", congress: "104", session: "2"},
-    {year: "1997", congress: "105", session: "1"},
-    {year: "1998", congress: "105", session: "2"},
-    {year: "1999", congress: "106", session: "1"},
-    {year: "2000", congress: "106", session: "2"},
-    {year: "2001", congress: "107", session: "1"},
-    {year: "2002", congress: "107", session: "2"},
-    {year: "2003", congress: "108", session: "1"},
-    {year: "2004", congress: "108", session: "2"},
-    {year: "2005", congress: "109", session: "1"},
-    {year: "2006", congress: "109", session: "2"},
-    {year: "2007", congress: "110", session: "1"},
-    {year: "2008", congress: "110", session: "2"},
-    {year: "2009", congress: "111", session: "1"},
-    {year: "2010", congress: "111", session: "2"},
-    {year: "2011", congress: "112", session: "1"},
-    {year: "2012", congress: "112", session: "2"},
-    {year: "2013", congress: "113", session: "1"},
-    {year: "2014", congress: "113", session: "2"},
-    {year: "2015", congress: "114", session: "1"},
-    {year: "2016", congress: "114", session: "2"},
-    {year: "2017", congress: "115", session: "1"},
-    {year: "2018", congress: "115", session: "2"},
-    {year: "2019", congress: "116", session: "1"},
-    {year: "2020", congress: "116", session: "2"}
-  ]
+  const yearRef = useRef(year)
+  const rollCallRef = useReducer(rollCall)
 
   const congressList = congress_dates.map((item) => {
     const c_identify = item.congress === "101" ? "st" : "th"
@@ -64,25 +37,7 @@ const App = () => {
   }
 
   useEffect(() => {
-
-    if (rollCall) {
-      const getVote = async () => {
-        // const response = await propublica.get(`/114/senate/sessions/1/votes/${rollCall}.json`)
-        const response = await propublica.get(`/${congress}/senate/sessions/${session}/votes/${rollCall}.json`)
-        if (response.data.results) {
-          setTitle(response.data.results.votes.vote.bill.title)
-          setDescription(response.data.results.votes.vote.description)
-          setPositionArray(response.data.results.votes.vote.positions)
-          console.log(response)
-        }
-        
-      }      
-
-      getVote()
-      
-    }
-
-    if(year) {
+    if(year && (year!==yearRef.current)) {
       const getVoteNum = async () => {
 
         const getVoteNumNov = async () => {
@@ -113,15 +68,11 @@ const App = () => {
           getVoteNumNov()
         }         
           
-        //   const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
-        //   setTotVotes(response_nov.data.results.votes[0].roll_call)
-        // } else if (response_nov.data.results.votes[0] == undefined){
-        //   const response_oct = await propublica.get(`senate/votes/${year}-10-02/${year}-11-01.json`)
-        //   setTotVotes(response_oct.data.results.votes[0].roll_call)
-        // } else {
-        //   document.getElementById("yearSelect").innerText = "Choose Vote"
-        // }  
-      }
+      }      
+
+      getVoteNum()      
+      yearRef.current = year      
+    }
 
     const buildVoteArray = () => {
       let votes = []
@@ -131,14 +82,57 @@ const App = () => {
       setVoteArray(votes)
     }
 
-      getVoteNum()
-      buildVoteArray()
-    }
+    buildVoteArray()
 
-  },[rollCall, year, totVotes]) //original: [rollCall, year, totVotes]
+    if (rollCall) {
+      const getVote = async () => {
+        const response = await propublica.get(`/${congress}/senate/sessions/${session}/votes/${rollCall}.json`)
+        if (response.data.results) {
+          setTitle(response.data.results.votes.vote.bill.title)
+          setDescription(response.data.results.votes.vote.description)
+          setPositionArray(response.data.results.votes.vote.positions)
+        }
+        
+      }      
+      getVote()            
+    }
+  },[rollCall, year, totVotes])
+
+  const setSenVotes = useCallback(() => {
+    console.log(`inside setSenVotes`)
+    positionArray.map(item => {
+      if(item.name === senatorOne) {
+        setSenatorOneVote(item.vote_position)
+      } else if (item.name === senatorTwo) {
+        setSenatorTwoVote(item.vote_position)
+      }
+    })
+  },[senatorOne, senatorTwo])
 
   const voteNum = (e) => {
     setRollCall(e.target.value)
+  }
+
+  const senOne = (e) => {
+    setSenatorOne(e.target.value)
+    positionArray.map(item => {
+      if(item.name === e.target.value) {
+        setSenatorOneVote(item.vote_position)
+      } else if (e.target.value === "") {
+        setSenatorOneVote("")
+      }
+    })
+  }
+
+  const senTwo = (e) => {
+    setSenatorTwo(e.target.value)
+    positionArray.map(item => {
+      if(item.name === e.target.value) {
+        setSenatorTwoVote(item.vote_position)
+      } else if (e.target.value === "") {
+        setSenatorTwoVote("")
+      }
+    })
   }
 
   const buildVotes = voteArray.map((item) => {
@@ -147,10 +141,20 @@ const App = () => {
     )    
   })
 
-  const buildSenators = positionArray.map((item) => {
-    return (
-      <option key={item.member_id} value={item.name}>{item.name}</option>
-    )
+  const buildSenatorOne = positionArray.map((item) => {
+    if (item.name !== senatorTwo) {
+      return (
+        <option key={item.member_id} value={item.name}>{item.name}</option>
+      )
+    }    
+  })
+
+  const buildSenatorTwo = positionArray.map((item) => {
+    if (item.name !== senatorOne) {
+      return (
+        <option key={item.member_id} value={item.name}>{item.name}</option>
+      )
+    }    
   })
 
   return (
@@ -163,35 +167,26 @@ const App = () => {
       <option value="">Choose Vote</option>
       {buildVotes}
     </select>
-    <select id="senatorSelect" className="ui search dropdown">
-      <option value="">Choose Senator</option>
-      {buildSenators}
+    <select id="senatorOneSelect" className="ui search dropdown" onChange={senOne}>
+      <option value="">Choose 1st Senator (Sorted by last name)</option>
+      {buildSenatorOne}
     </select>
-      <button onClick={() => useEffect}>Search</button>
+    <select id="senatorTwoSelect" className="ui search dropdown" onChange={senTwo}>
+      <option value="">Choose 2nd Senator (Sorted by last name)</option>
+      {buildSenatorTwo}
+    </select>
+      <button onClick={setSenVotes}>Search</button>
+      <br/>
+      <label>Title</label>
       <h5>{title}</h5>
+      <label>Description</label>
       <div>{description}</div>
+      <label>Senator One Vote</label>
+      <div>{senatorOne}{senatorOneVote}</div>
+      <label>Senator Two Vote</label>
+      <div>{senatorTwo}{senatorTwoVote}</div>
     </div>
   )
 }
-
-// class App extends React.Component {
-//   state = { description: [] }
-
-//   getVote = async () => {
-//     const response = await propublica.get("/114/senate/sessions/1/votes/301.json")
-//     console.log(response.data.results.votes.vote.description)
-//     this.setState({description: response.data.results.votes.vote.description})
-//   }
-
-//   render() {
-//     return (
-//       <div>
-//         <button onClick={this.getVote}>Search</button>
-//         <div>{this.state.description}</div>
-//       </div>
-      
-//     )
-//   }
-// }
 
 export default App
