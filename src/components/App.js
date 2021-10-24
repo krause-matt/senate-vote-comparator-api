@@ -20,7 +20,8 @@ const App = () => {
   const yearRef = useRef(year)
 
   const congressList = congress_dates.map((item) => {
-    const c_identify = item.congress === "101" ? "st" : "th"
+    // const c_identify = item.congress === "101" ? "st" : "th"
+    const c_identify = item.congress === "101" ? "st" : item.congress === "102" ? "nd" : item.congress === "103" ? "rd" : "th"
     const s_identify = item.session === "1" ? "st" : "nd"
     return (
       <option key={item.year} data-year={item.year} data-congress={item.congress} data-session={item.session} value={`year: ${item.year}, congress: ${item.congress}, session: ${item.session}`}>{`${item.year} (${item.congress}${c_identify} - ${item.session}${s_identify})`}</option>
@@ -38,6 +39,8 @@ const App = () => {
   useEffect(() => {
     if(year && (year!==yearRef.current)) {
       const getVoteNum = async () => {
+
+        setVoteArray(["Loading..."])
 
         const getVoteNumNov = async () => {
           const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
@@ -70,7 +73,7 @@ const App = () => {
       }      
 
       getVoteNum()      
-      yearRef.current = year      
+      yearRef.current = year
     }
 
     const buildVoteArray = () => {
@@ -87,7 +90,11 @@ const App = () => {
       const getVote = async () => {
         const response = await propublica.get(`/${congress}/senate/sessions/${session}/votes/${rollCall}.json`)
         if (response.data.results) {
-          setTitle(response.data.results.votes.vote.bill.title)
+          if (response.data.results.votes.vote.bill.title) {
+            setTitle(response.data.results.votes.vote.bill.title)            
+          } else {
+            setTitle("Title not available for this bill")
+          }          
           setDescription(response.data.results.votes.vote.description)
           setPositionArray(response.data.results.votes.vote.positions)
         }
@@ -109,6 +116,8 @@ const App = () => {
   },[senatorOne, senatorTwo])
 
   const voteNum = (e) => {
+    setTitle("Loading...")
+    setDescription("Loading...")
     setRollCall(e.target.value)
   }
 
@@ -212,14 +221,20 @@ const App = () => {
           <div className="row mt-5">
             <div className="col">
               <div className="card">
+                <div className="card-header">
+                  <strong>1st Senator Vote</strong>
+                </div>
                 <div className="card-body">
                   <h5 className="card-title">{senatorOne}</h5>
                   <p className="card-text">{senatorOneVote}</p>
-                </div>
+                </div>                                
               </div>
             </div>
             <div className="col">
               <div className="card">
+                <div className="card-header">
+                  <strong>2nd Senator Vote</strong>
+                </div>
                 <div className="card-body">
                   <h5 className="card-title">{senatorTwo}</h5>
                   <p className="card-text">{senatorTwoVote}</p>
