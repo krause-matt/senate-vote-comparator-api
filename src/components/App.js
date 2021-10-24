@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback, useRef, useReducer} from "react"
+import React, {useState, useEffect, useCallback, useRef} from "react"
 import propublica from "../api/propublica"
 import congress_dates from "./CongressDates"
 
@@ -18,13 +18,12 @@ const App = () => {
   const [senatorTwoVote, setSenatorTwoVote] = useState("")
 
   const yearRef = useRef(year)
-  const rollCallRef = useReducer(rollCall)
 
   const congressList = congress_dates.map((item) => {
     const c_identify = item.congress === "101" ? "st" : "th"
     const s_identify = item.session === "1" ? "st" : "nd"
     return (
-      <option data-year={item.year} data-congress={item.congress} data-session={item.session} value={`year: ${item.year}, congress: ${item.congress}, session: ${item.session}`}>{`${item.year} (${item.congress}${c_identify} - ${item.session}${s_identify})`}</option>
+      <option key={item.year} data-year={item.year} data-congress={item.congress} data-session={item.session} value={`year: ${item.year}, congress: ${item.congress}, session: ${item.session}`}>{`${item.year} (${item.congress}${c_identify} - ${item.session}${s_identify})`}</option>
     )
   })
 
@@ -137,7 +136,7 @@ const App = () => {
 
   const buildVotes = voteArray.map((item) => {
     return (
-      <option value={item.toString()}>{item}</option>
+      <option key={item} value={item.toString()}>{item}</option>
     )    
   })
 
@@ -158,34 +157,80 @@ const App = () => {
   })
 
   return (
-    <div>
-    <select className="ui search dropdown" onChange={congressState}>
-      <option value="">Select a Year and Congress</option>
-      {congressList}
-    </select>
-    <select id="yearSelect" className="ui search dropdown" onChange={voteNum}>
-      <option value="">Choose Vote</option>
-      {buildVotes}
-    </select>
-    <select id="senatorOneSelect" className="ui search dropdown" onChange={senOne}>
-      <option value="">Choose 1st Senator (Sorted by last name)</option>
-      {buildSenatorOne}
-    </select>
-    <select id="senatorTwoSelect" className="ui search dropdown" onChange={senTwo}>
-      <option value="">Choose 2nd Senator (Sorted by last name)</option>
-      {buildSenatorTwo}
-    </select>
-      <button onClick={setSenVotes}>Search</button>
-      <br/>
-      <label>Title</label>
-      <h5>{title}</h5>
-      <label>Description</label>
-      <div>{description}</div>
-      <label>Senator One Vote</label>
-      <div>{senatorOne}{senatorOneVote}</div>
-      <label>Senator Two Vote</label>
-      <div>{senatorTwo}{senatorTwoVote}</div>
+    <div className="container">
+      <div className="container mt-1">
+        <nav className="navbar bg-primary rounded">
+          <div className="container-fluid">
+            <h4 className="text-light"><strong>Senate Vote Comparison Tool</strong></h4>
+          </div>
+        </nav>
+      </div>      
+      <form className="mt-5">
+        <div className="container mb-5">
+          <select className="form-select" onChange={congressState}>
+            <option value="">Select a Year and Congress</option>
+            {congressList}
+          </select>
+        </div>
+        <div className="container mb-5">
+          <select id="yearSelect" className="form-select" onChange={voteNum}>
+            <option value="">Choose Vote</option>
+            {buildVotes}
+          </select>
+        </div>
+        <div className="container mb-5">
+          <div className="row">
+            <div className="col">
+              <select id="senatorOneSelect" className="form-select" onChange={senOne}>
+                <option value="">Choose 1st Senator</option>
+                {buildSenatorOne}
+              </select>
+            </div>
+            <div className="col">
+              <select id="senatorTwoSelect" className="form-select" onChange={senTwo}>
+                <option value="">Choose 2nd Senator</option>
+                {buildSenatorTwo}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="container">
+          <div className="card">
+            <div className="card-header">
+              <strong>Vote Title</strong>
+            </div>
+            <ul className="list-group list-group-flush">
+              <li className="list-group-item">{title}</li>
+            </ul>
+            <div className="card-header">
+            <strong>Vote Description</strong>
+            </div>
+            <ul className="list-group list-group-flush">
+              <li className="list-group-item">{description}</li>
+            </ul>
+          </div>
+          <div className="row mt-5">
+            <div className="col">
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title">{senatorOne}</h5>
+                  <p className="card-text">{senatorOneVote}</p>
+                </div>
+              </div>
+            </div>
+            <div className="col">
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title">{senatorTwo}</h5>
+                  <p className="card-text">{senatorTwoVote}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
+    
   )
 }
 
