@@ -3,8 +3,8 @@ import propublica from "../api/propublica"
 import congress_dates from "./CongressDates"
 
 const App = () => {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
+  const [title, setTitle] = useState("Select congress then vote to see Title")
+  const [description, setDescription] = useState("Select congress then vote to see Description")
   const [rollCall, setRollCall] = useState(null)
   const [year, setYear] = useState(null)
   const [congress, setCongress] = useState(null)
@@ -32,15 +32,14 @@ const App = () => {
     setYear(e.target.options[e.target.selectedIndex].dataset.year)
     setCongress(e.target.options[e.target.selectedIndex].dataset.congress)
     setSession(e.target.options[e.target.selectedIndex].dataset.session)
-    setTitle(null)
-    setDescription(null)
+    // setTitle(null)
+    // setDescription(null)
   }
 
   useEffect(() => {
     if(year && (year!==yearRef.current)) {
-      const getVoteNum = async () => {
-
-        setVoteArray(["Loading..."])
+      setVoteArray(["Loading..."])
+      const getVoteNum = async () => {        
 
         const getVoteNumNov = async () => {
           const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
@@ -165,6 +164,16 @@ const App = () => {
     }    
   })
 
+  const clearSearch = () => {
+    setYear(null)
+    setCongress(null)
+    setSession(null)
+    setSenatorOne("")
+    setSenatorTwo("")
+    setSenatorOneVote("")
+    setSenatorTwoVote("")    
+  }
+
   return (
     <div className="container">
       <div className="container mt-1">
@@ -176,7 +185,7 @@ const App = () => {
       </div>      
       <form className="mt-5">
         <div className="container mb-5">
-          <select className="form-select" onChange={congressState}>
+          <select id="congressSelect" className="form-select" onChange={congressState}>
             <option value="">Select a Year and Congress</option>
             {congressList}
           </select>
@@ -204,15 +213,16 @@ const App = () => {
           </div>
         </div>
         <div className="container">
+          <button type="button" className="btn btn-danger mb-5" onClick={clearSearch}>Clear</button>
           <div className="card">
             <div className="card-header">
-              <strong>Vote Title</strong>
+              <strong>Title</strong>
             </div>
             <ul className="list-group list-group-flush">
               <li className="list-group-item">{title}</li>
             </ul>
             <div className="card-header">
-            <strong>Vote Description</strong>
+            <strong>Description</strong>
             </div>
             <ul className="list-group list-group-flush">
               <li className="list-group-item">{description}</li>
