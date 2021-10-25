@@ -37,8 +37,9 @@ const App = () => {
   }
 
   useEffect(() => {
+
     if(year && (year!==yearRef.current)) {
-      setVoteArray(["Loading..."])
+      document.getElementById("yearSelect").innerHTML = `<option value="">Loading...</option>`
       const getVoteNum = async () => {        
 
         const getVoteNumNov = async () => {
@@ -46,6 +47,7 @@ const App = () => {
 
           if (response_nov.data.results.votes[0]) {
             setTotVotes(response_nov.data.results.votes[0].roll_call)
+            document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
           } else if (response_nov.data.results.votes[0] === undefined) {
             getVoteNumOct()
           }
@@ -55,6 +57,7 @@ const App = () => {
           const response_oct = await propublica.get(`senate/votes/${year}-10-02/${year}-11-01.json`)
           if (response_oct.data.results.votes[0]) {
             setTotVotes(response_oct.data.results.votes[0].roll_call)
+            document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
           } else {
             document.getElementById("yearSelect").innerText = "Choose Vote"
           }
@@ -65,15 +68,19 @@ const App = () => {
 
         if (response_dec.data.results.votes[0]) {
           setTotVotes(response_dec.data.results.votes[0].roll_call)
+          document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
+
         } else if (response_dec.data.results.votes[0] === undefined){
           getVoteNumNov()
         }         
           
       }      
 
-      getVoteNum()      
+      getVoteNum()   
       yearRef.current = year
     }
+
+
 
     const buildVoteArray = () => {
       let votes = []
@@ -165,13 +172,18 @@ const App = () => {
   })
 
   const clearSearch = () => {
+    const cReset = document.getElementById("congressSelect").innerHTML
     setYear(null)
     setCongress(null)
     setSession(null)
+    setTitle("")
+    setDescription("")
     setSenatorOne("")
     setSenatorTwo("")
     setSenatorOneVote("")
-    setSenatorTwoVote("")    
+    setSenatorTwoVote("")
+    document.getElementById("congressSelect").innerHTML = cReset
+    document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
   }
 
   return (
