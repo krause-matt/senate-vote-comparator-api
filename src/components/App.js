@@ -176,14 +176,15 @@ const App = () => {
     setYear(null)
     setCongress(null)
     setSession(null)
-    setTitle("")
-    setDescription("")
+    setTitle("Select congress then vote to see Title")
+    setDescription("Select congress then vote to see Description")
     setSenatorOne("")
     setSenatorTwo("")
     setSenatorOneVote("")
     setSenatorTwoVote("")
     document.getElementById("congressSelect").innerHTML = cReset
     document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
+    setPositionArray([])
   }
 
   return (

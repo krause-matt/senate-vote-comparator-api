@@ -30,7 +30,8 @@ const congress_dates = [
   {year: "2017", congress: "115", session: "1"},
   {year: "2018", congress: "115", session: "2"},
   {year: "2019", congress: "116", session: "1"},
-  {year: "2020", congress: "116", session: "2"}
+  {year: "2020", congress: "116", session: "2"},
+  {year: "2021", congress: "117", session: "1"}
 ]
 
 export default congress_dates
