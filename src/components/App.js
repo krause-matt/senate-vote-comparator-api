@@ -18,6 +18,7 @@ const App = () => {
   const [senatorTwoVote, setSenatorTwoVote] = useState("")
 
   const yearRef = useRef(year)
+  const rollCallRef = useRef(rollCall)
 
   const congressList = congress_dates.map((item) => {
     // const c_identify = item.congress === "101" ? "st" : "th"
@@ -92,7 +93,8 @@ const App = () => {
 
     buildVoteArray()
 
-    if (rollCall) {
+    if (rollCall && rollCall !== rollCallRef.current) {
+      console.log(`rollCall: ${rollCall}, rollCallRef.current: ${rollCallRef.current}`)
       const getVote = async () => {
         const response = await propublica.get(`/${congress}/senate/sessions/${session}/votes/${rollCall}.json`)
         if (response.data.results) {
@@ -106,22 +108,25 @@ const App = () => {
         }
         
       }      
-      getVote()            
+      getVote()
+      
+      rollCallRef.current = rollCall
     }
   },[rollCall, year, totVotes])
 
-  const setSenVotes = useCallback(() => {
-    console.log(`inside setSenVotes`)
-    positionArray.map(item => {
-      if(item.name === senatorOne) {
-        setSenatorOneVote(item.vote_position)
-      } else if (item.name === senatorTwo) {
-        setSenatorTwoVote(item.vote_position)
-      }
-    })
-  },[senatorOne, senatorTwo])
+  // const setSenVotes = useCallback(() => {
+  //   console.log(`inside setSenVotes`)
+  //   positionArray.map(item => {
+  //     if(item.name === senatorOne) {
+  //       setSenatorOneVote(item.vote_position)
+  //     } else if (item.name === senatorTwo) {
+  //       setSenatorTwoVote(item.vote_position)
+  //     }
+  //   })
+  // },[senatorOne, senatorTwo])
 
   const voteNum = (e) => {
+    console.log(`inside voteNum, e.target.value = ${e.target.value}`)
     setTitle("Loading...")
     setDescription("Loading...")
     setRollCall(e.target.value)
