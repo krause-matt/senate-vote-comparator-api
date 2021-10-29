@@ -19,9 +19,9 @@ const App = () => {
 
   const yearRef = useRef(year)
   const rollCallRef = useRef(rollCall)
+  const totVotesRef = useRef(totVotes)
 
   const congressList = congress_dates.map((item) => {
-    // const c_identify = item.congress === "101" ? "st" : "th"
     const c_identify = item.congress === "101" ? "st" : item.congress === "102" ? "nd" : item.congress === "103" ? "rd" : "th"
     const s_identify = item.session === "1" ? "st" : "nd"
     return (
@@ -33,22 +33,30 @@ const App = () => {
     setYear(e.target.options[e.target.selectedIndex].dataset.year)
     setCongress(e.target.options[e.target.selectedIndex].dataset.congress)
     setSession(e.target.options[e.target.selectedIndex].dataset.session)
-    // setTitle(null)
-    // setDescription(null)
   }
 
   useEffect(() => {
 
+    console.log(`useEffect: year = ${year}, yearRef = ${yearRef.current}, rollCall = ${rollCall}, rollCallRef = ${rollCallRef.current}, totVotes = ${totVotes}, totVotesRef = ${totVotesRef.current}`)
+
     if(year && (year!==yearRef.current)) {
-      document.getElementById("yearSelect").innerHTML = `<option value="">Loading...</option>`
-      const getVoteNum = async () => {        
+
+      setTotVotes(null)
+      setPositionArray([])
+      setTitle("Select congress then vote to see Title")
+      setDescription("Select congress then vote to see Description")
+      setSenatorOne("")
+      setSenatorTwo("")
+      setSenatorOneVote("")
+      setSenatorTwoVote("")
+
+      const getVoteNum = async () => {
 
         const getVoteNumNov = async () => {
           const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
 
           if (response_nov.data.results.votes[0]) {
             setTotVotes(response_nov.data.results.votes[0].roll_call)
-            document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
           } else if (response_nov.data.results.votes[0] === undefined) {
             getVoteNumOct()
           }
@@ -58,9 +66,8 @@ const App = () => {
           const response_oct = await propublica.get(`senate/votes/${year}-10-02/${year}-11-01.json`)
           if (response_oct.data.results.votes[0]) {
             setTotVotes(response_oct.data.results.votes[0].roll_call)
-            document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
           } else {
-            document.getElementById("yearSelect").innerText = "Choose Vote"
+            document.getElementById("yearSelect").innerText = "TEST"
           }
         }
 
@@ -69,19 +76,16 @@ const App = () => {
 
         if (response_dec.data.results.votes[0]) {
           setTotVotes(response_dec.data.results.votes[0].roll_call)
-          document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
-
         } else if (response_dec.data.results.votes[0] === undefined){
           getVoteNumNov()
-        }         
-          
+        }
+        
       }      
 
       getVoteNum()   
       yearRef.current = year
+      totVotesRef.current = totVotes
     }
-
-
 
     const buildVoteArray = () => {
       let votes = []
@@ -94,7 +98,6 @@ const App = () => {
     buildVoteArray()
 
     if (rollCall && rollCall !== rollCallRef.current) {
-      console.log(`rollCall: ${rollCall}, rollCallRef.current: ${rollCallRef.current}`)
       const getVote = async () => {
         const response = await propublica.get(`/${congress}/senate/sessions/${session}/votes/${rollCall}.json`)
         if (response.data.results) {
@@ -114,19 +117,7 @@ const App = () => {
     }
   },[rollCall, year, totVotes])
 
-  // const setSenVotes = useCallback(() => {
-  //   console.log(`inside setSenVotes`)
-  //   positionArray.map(item => {
-  //     if(item.name === senatorOne) {
-  //       setSenatorOneVote(item.vote_position)
-  //     } else if (item.name === senatorTwo) {
-  //       setSenatorTwoVote(item.vote_position)
-  //     }
-  //   })
-  // },[senatorOne, senatorTwo])
-
   const voteNum = (e) => {
-    console.log(`inside voteNum, e.target.value = ${e.target.value}`)
     setTitle("Loading...")
     setDescription("Loading...")
     setRollCall(e.target.value)
@@ -177,8 +168,7 @@ const App = () => {
   })
 
   const clearSearch = () => {
-    const cReset = document.getElementById("congressSelect").innerHTML
-    setYear(null)
+    const cReset = document.getElementById("congressSelect").innerHTML    
     setCongress(null)
     setSession(null)
     setTitle("Select congress then vote to see Title")
@@ -187,8 +177,8 @@ const App = () => {
     setSenatorTwo("")
     setSenatorOneVote("")
     setSenatorTwoVote("")
-    document.getElementById("congressSelect").innerHTML = cReset
-    document.getElementById("yearSelect").innerHTML = `<option value="">Choose Vote</option>`
+    setTotVotes(null)
+    document.getElementById("congressSelect").innerHTML = cReset    
     setPositionArray([])
   }
 
