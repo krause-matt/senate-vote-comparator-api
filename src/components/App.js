@@ -20,6 +20,7 @@ const App = () => {
   const [senatorTwoParty, setSenatorTwoParty] = useState("")
   const [senatorOneState, setSenatorOneState] = useState("")
   const [senatorTwoState, setSenatorTwoState] = useState("")
+  const [updating, setUpdating] = useState(null)
 
   const yearRef = useRef(year)
   const rollCallRef = useRef(rollCall)
@@ -59,6 +60,7 @@ const App = () => {
       setSenatorTwoState("")
 
       const getVoteNum = async () => {
+        setUpdating("updating")
 
         const getVoteNumNov = async () => {
           const response_nov = await propublica.get(`senate/votes/${year}-11-02/${year}-12-01.json`)
@@ -88,7 +90,7 @@ const App = () => {
         } else if (response_dec.data.results.votes[0] === undefined){
           getVoteNumNov()
         }
-        
+        setUpdating(null)
       }      
 
       getVoteNum()
@@ -232,6 +234,12 @@ const App = () => {
     setPositionArray([])
   }
 
+  const loadMessage = () => {
+    return (
+      <option value="">Loading...</option>
+    )
+  }
+
   return (
     <div className="container">
       <div className="container mt-1">
@@ -250,9 +258,9 @@ const App = () => {
         </div>
         <div className="container mb-5">
           <select id="yearSelect" className="form-select" onChange={voteNum}>
-            <option value="">Choose Vote</option>
-            {buildVotes}
-          </select>
+            {(updating != null) ? <option value="">Loading...</option> : <option value="">Choose Vote</option>}              
+            {buildVotes}         
+            </select>
         </div>
         <div className="container mb-5">
           <div className="row">
