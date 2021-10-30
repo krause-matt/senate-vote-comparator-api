@@ -42,7 +42,7 @@ const App = () => {
 
   useEffect(() => {
 
-    console.log(`useEffect: year = ${year}, yearRef = ${yearRef.current}, rollCall = ${rollCall}, rollCallRef = ${rollCallRef.current}, totVotes = ${totVotes}, totVotesRef = ${totVotesRef.current}`)
+    //console.log(`useEffect: year = ${year}, yearRef = ${yearRef.current}, rollCall = ${rollCall}, rollCallRef = ${rollCallRef.current}, totVotes = ${totVotes}, totVotesRef = ${totVotesRef.current}`)
 
     if(year && (year!==yearRef.current)) {
 
@@ -121,7 +121,7 @@ const App = () => {
           }          
           setDescription(response.data.results.votes.vote.description)
           setPositionArray(response.data.results.votes.vote.positions)
-          console.log(response.data.results.votes.vote)
+          //console.log(response.data.results.votes.vote)
         }
         
       }      
@@ -232,12 +232,6 @@ const App = () => {
     setTotVotes(null)
     document.getElementById("congressSelect").innerHTML = cReset    
     setPositionArray([])
-  }
-
-  const loadMessage = () => {
-    return (
-      <option value="">Loading...</option>
-    )
   }
 
   return (
