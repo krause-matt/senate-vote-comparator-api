@@ -16,6 +16,10 @@ const App = () => {
   const [senatorTwo, setSenatorTwo] = useState("")
   const [senatorOneVote, setSenatorOneVote] = useState("")
   const [senatorTwoVote, setSenatorTwoVote] = useState("")
+  const [senatorOneParty, setSenatorOneParty] = useState("")
+  const [senatorTwoParty, setSenatorTwoParty] = useState("")
+  const [senatorOneState, setSenatorOneState] = useState("")
+  const [senatorTwoState, setSenatorTwoState] = useState("")
 
   const yearRef = useRef(year)
   const rollCallRef = useRef(rollCall)
@@ -49,6 +53,10 @@ const App = () => {
       setSenatorTwo("")
       setSenatorOneVote("")
       setSenatorTwoVote("")
+      setSenatorOneParty("")
+      setSenatorTwoParty("")
+      setSenatorOneState("")
+      setSenatorTwoState("")
 
       const getVoteNum = async () => {
 
@@ -73,6 +81,7 @@ const App = () => {
 
         const yr_plus_one = (Number(year)+1).toString()
         const response_dec = await propublica.get(`senate/votes/${year}-12-02/${yr_plus_one}-01-01.json`)
+        
 
         if (response_dec.data.results.votes[0]) {
           setTotVotes(response_dec.data.results.votes[0].roll_call)
@@ -82,12 +91,14 @@ const App = () => {
         
       }      
 
-      getVoteNum()   
+      getVoteNum()
+     
       yearRef.current = year
       totVotesRef.current = totVotes
+      
     }
 
-    const buildVoteArray = () => {
+    const buildVoteArray = () => {      
       let votes = []
       for (let i = 1; i<= totVotes; i++) {
         votes.push(i)
@@ -108,6 +119,7 @@ const App = () => {
           }          
           setDescription(response.data.results.votes.vote.description)
           setPositionArray(response.data.results.votes.vote.positions)
+          console.log(response.data.results.votes.vote)
         }
         
       }      
@@ -123,13 +135,41 @@ const App = () => {
     setRollCall(e.target.value)
   }
 
+  const senOneParty = (party) => {
+    if (party === "D") {
+      setSenatorOneParty("Democrat")
+    } else if (party === "R") {
+      setSenatorOneParty("Republican")
+    } else if (party === "ID") {
+      setSenatorOneParty("Independent")
+    } else {
+      setSenatorOneParty("")
+    }
+  }
+
+  const senTwoParty = (party) => {
+    if (party === "D") {
+      setSenatorTwoParty("Democrat")
+    } else if (party === "R") {
+      setSenatorTwoParty("Republican")
+    } else if (party === "ID") {
+      setSenatorTwoParty("Independent")
+    } else {
+      setSenatorTwoParty("")
+    }
+  }
+
   const senOne = (e) => {
     setSenatorOne(e.target.value)
     positionArray.map(item => {
       if(item.name === e.target.value) {
         setSenatorOneVote(item.vote_position)
+        senOneParty(item.party)
+        setSenatorOneState(item.state)
       } else if (e.target.value === "") {
         setSenatorOneVote("")
+        setSenatorOneParty("")
+        setSenatorOneState("")
       }
     })
   }
@@ -139,8 +179,12 @@ const App = () => {
     positionArray.map(item => {
       if(item.name === e.target.value) {
         setSenatorTwoVote(item.vote_position)
+        senTwoParty(item.party)
+        setSenatorTwoState(item.state)
       } else if (e.target.value === "") {
         setSenatorTwoVote("")
+        setSenatorTwoParty("")
+        setSenatorTwoState("")
       }
     })
   }
@@ -167,6 +211,8 @@ const App = () => {
     }    
   })
 
+  
+
   const clearSearch = () => {
     const cReset = document.getElementById("congressSelect").innerHTML    
     setCongress(null)
@@ -177,6 +223,10 @@ const App = () => {
     setSenatorTwo("")
     setSenatorOneVote("")
     setSenatorTwoVote("")
+    setSenatorOneParty("")
+    setSenatorTwoParty("")
+    setSenatorOneState("")
+    setSenatorTwoState("")
     setTotVotes(null)
     document.getElementById("congressSelect").innerHTML = cReset    
     setPositionArray([])
@@ -240,11 +290,13 @@ const App = () => {
             <div className="col">
               <div className="card">
                 <div className="card-header">
-                  <strong>1st Senator Vote</strong>
+                  <strong>1st Senator</strong>
                 </div>
                 <div className="card-body">
-                  <h5 className="card-title">{senatorOne}</h5>
-                  <p className="card-text">{senatorOneVote}</p>
+                  <h5 className="card-title mb-3">{senatorOne}</h5>
+                  <p className="card-text">{senatorOneParty === "" ? "" : `Party: ${senatorOneParty}`}</p>
+                  <p className="card-text">{senatorOneState === "" ? "" : `State: ${senatorOneState}`}</p>
+                  <p className="card-text">{senatorOneVote === "" ? "" : `Vote: ${senatorOneVote}`}</p>
                 </div>                                
               </div>
             </div>
@@ -254,8 +306,10 @@ const App = () => {
                   <strong>2nd Senator Vote</strong>
                 </div>
                 <div className="card-body">
-                  <h5 className="card-title">{senatorTwo}</h5>
-                  <p className="card-text">{senatorTwoVote}</p>
+                  <h5 className="card-title mb-3">{senatorTwo}</h5>
+                  <p className="card-text">{senatorTwoParty === "" ? "" : `Party: ${senatorTwoParty}`}</p>
+                  <p className="card-text">{senatorTwoState === "" ? "" : `State: ${senatorTwoState}`}</p>
+                  <p className="card-text">{senatorTwoVote === "" ? "" : `Vote: ${senatorTwoVote}`}</p>
                 </div>
               </div>
             </div>
