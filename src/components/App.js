@@ -293,13 +293,13 @@ const App = () => {
         </div>
         <div className="container mb-3">
           <div className="row">
-            <div className="col">
+            <div className="col-md mb-3">
               <select id="senatorOneSelect" className="form-select" onChange={senOne}>
                 <option value="">Choose 1st Senator</option>
                 {buildSenatorOne}
               </select>
             </div>
-            <div className="col">
+            <div className="col-md">
               <select id="senatorTwoSelect" className="form-select" onChange={senTwo}>
                 <option value="">Choose 2nd Senator</option>
                 {buildSenatorTwo}
@@ -324,7 +324,7 @@ const App = () => {
             </ul>
           </div>
           <div className="row mt-3">
-            <div className="col">
+            <div className="col-md mb-3">
               <div className="card">
                 <div className="card-header">
                   <strong>1st Senator</strong>
