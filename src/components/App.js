@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback, useRef} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import propublica from "../api/propublica"
 import congress_dates from "./CongressDates"
 
@@ -121,7 +121,10 @@ const App = () => {
           }          
           setDescription(response.data.results.votes.vote.description)
           setPositionArray(response.data.results.votes.vote.positions)
-          //console.log(response.data.results.votes.vote)
+          const senOneDropDown = document.getElementById("senatorOneSelect");
+          const senTwoDropDown = document.getElementById("senatorTwoSelect");
+          senOneUpdate(senOneDropDown.value);
+          senTwoUpdate(senTwoDropDown.value);
         }
         
       }      
@@ -176,6 +179,21 @@ const App = () => {
     })
   }
 
+  const senOneUpdate = (senName) => {
+    setSenatorOne(senName)
+    positionArray.map(item => {
+      if(item.name === senName) {
+        setSenatorOneVote(item.vote_position)
+        senOneParty(item.party)
+        setSenatorOneState(item.state)
+      } else if (senName === "") {
+        setSenatorOneVote("")
+        setSenatorOneParty("")
+        setSenatorOneState("")
+      }
+    })
+  }
+
   const senTwo = (e) => {
     setSenatorTwo(e.target.value)
     positionArray.map(item => {
@@ -190,6 +208,23 @@ const App = () => {
       }
     })
   }
+
+  const senTwoUpdate = (senName) => {
+    setSenatorTwo(senName)
+    positionArray.map(item => {
+      if(item.name === senName) {
+        setSenatorTwoVote(item.vote_position)
+        senTwoParty(item.party)
+        setSenatorTwoState(item.state)
+      } else if (senName === "") {
+        setSenatorTwoVote("")
+        setSenatorTwoParty("")
+        setSenatorTwoState("")
+      }
+    })
+  }
+
+
 
   const buildVotes = voteArray.map((item) => {
     return (
@@ -236,27 +271,27 @@ const App = () => {
 
   return (
     <div className="container">
-      <div className="container mt-1">
+      <div className="container mt-3">
         <nav className="navbar bg-primary rounded">
           <div className="container-fluid">
             <h4 className="text-light"><strong>Senate Vote Comparison Tool</strong></h4>
           </div>
         </nav>
       </div>      
-      <form className="mt-5">
-        <div className="container mb-5">
+      <form className="mt-3">
+        <div className="container mb-3">
           <select id="congressSelect" className="form-select" onChange={congressState}>
             <option value="">Select a Year and Congress</option>
             {congressList}
           </select>
         </div>
-        <div className="container mb-5">
+        <div className="container mb-3">
           <select id="yearSelect" className="form-select" onChange={voteNum}>
             {(updating != null) ? <option value="">Loading...</option> : <option value="">Choose Vote</option>}              
             {buildVotes}         
             </select>
         </div>
-        <div className="container mb-5">
+        <div className="container mb-3">
           <div className="row">
             <div className="col">
               <select id="senatorOneSelect" className="form-select" onChange={senOne}>
@@ -288,7 +323,7 @@ const App = () => {
               <li className="list-group-item">{description}</li>
             </ul>
           </div>
-          <div className="row mt-5">
+          <div className="row mt-3">
             <div className="col">
               <div className="card">
                 <div className="card-header">
@@ -305,7 +340,7 @@ const App = () => {
             <div className="col">
               <div className="card">
                 <div className="card-header">
-                  <strong>2nd Senator Vote</strong>
+                  <strong>2nd Senator</strong>
                 </div>
                 <div className="card-body">
                   <h5 className="card-title mb-3">{senatorTwo}</h5>
